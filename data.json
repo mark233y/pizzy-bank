@@ -1,0 +1,152 @@
+{
+  "users": {
+    "mark01": {
+      "password": "d17f25ecfbcc7857f7bebea469308be0b2580943e96d13a3ad98a13675c4bfc2",
+      "full_name": "Mark Dewitt",
+      "checking": 17100.0,
+      "savings": 0.0,
+      "loan": 1000.0,
+      "account_no": "...1001",
+      "card_no": "4532 88** **** 1001",
+      "transactions": [
+        {
+          "date": "Oct 1",
+          "type": "Account Opened",
+          "amount": 0.0,
+          "icon": "\u2728"
+        },
+        {
+          "date": "Oct 21",
+          "type": "Direct deposit",
+          "amount": 15000.0,
+          "icon": "\ud83d\udc51"
+        },
+        {
+          "date": "Oct 25",
+          "type": "Walmart",
+          "amount": 1000.0,
+          "icon": "\ud83c\udfe6"
+        },
+        {
+          "date": "Oct 31",
+          "type": "Mobile Check Deposit",
+          "amount": 100.0,
+          "icon": "\ud83d\udcf8"
+        },
+        {
+          "date": "Nov 01",
+          "type": "Direct deposit: $1,000.00",
+          "amount": 1000.0,
+          "icon": "\ud83d\udc51"
+        }
+      ],
+      "created": "Oct 30, 2026"
+    },
+    "richie": {
+      "password": "0ffe1abd1a08215353c233d6e009613e95eec4253832a761af28ff37ac5a150c",
+      "full_name": "Sam",
+      "checking": 201000.0,
+      "savings": 0.0,
+      "account_no": "...1002",
+      "transactions": [
+        {
+          "date": "Nov 01",
+          "type": "Direct Deposit",
+          "amount": 150000.0,
+          "icon": "\u2b07\ufe0f"
+        },
+        {
+          "date": "Nov 01",
+          "type": "Direct Deposit",
+          "amount": 50000.0,
+          "icon": "\u2b07\ufe0f"
+        },
+        {
+          "date": "Nov 01",
+          "type": "Direct Deposit",
+          "amount": 1000.0,
+          "icon": "\u2b07\ufe0f"
+        }
+      ],
+      "created": "Nov 01, 2026"
+    },
+    "mark001": {
+      "password": "2d613dd5fd8582919a35f976305c89dd313b3cc2ecf61ab1c823280669130793",
+      "full_name": "Mark Dewitt",
+      "checking": 10225.0,
+      "savings": 0.0,
+      "loan": 0.0,
+      "account_no": "...1003",
+      "card_no": "4532 88** **** 1003",
+      "transactions": [
+        {
+          "date": "Oct 10",
+          "type": "Account Opened",
+          "amount": 50.0,
+          "icon": "\u2728"
+        },
+        {
+          "date": "Nov 01",
+          "type": "Direct Deposit",
+          "amount": 100.0,
+          "icon": "\u2b07\ufe0f"
+        },
+        {
+          "date": "Nov 01",
+          "type": "Direct Deposit",
+          "amount": 100.0,
+          "icon": "\u2b07\ufe0f"
+        },
+        {
+          "date": "Nov 01",
+          "type": "Direct Deposit",
+          "amount": 10000.0,
+          "icon": "\u2b07\ufe0f"
+        },
+        {
+          "date": "Oct 12",
+          "type": "Walmart",
+          "amount": -25.0,
+          "icon": "\ud83d\udc51"
+        }
+      ],
+      "created": "Nov 01, 2026"
+    },
+    "mark555": {
+      "password": "ca7d2ececad211b3489d782a6313873ab87c84c7565ceffdf3916d86ffba4064",
+      "full_name": "Mark Dewitt",
+      "checking": 200025.0,
+      "savings": 0.0,
+      "loan": 0.0,
+      "account_no": "...1004",
+      "card_no": "4532 88** **** 1004",
+      "transactions": [
+        {
+          "date": "Oct 15",
+          "type": "Account Opened",
+          "amount": 50.0,
+          "icon": "\u2728"
+        },
+        {
+          "date": "Oct 16",
+          "type": "Walmart ",
+          "amount": -25.0,
+          "icon": "\ud83d\udc51"
+        },
+        {
+          "date": "Oct 23",
+          "type": "Direct Deposit",
+          "amount": 150000.0,
+          "icon": "\u2b07\ufe0f"
+        },
+        {
+          "date": "Oct 26",
+          "type": "Direct Deposit",
+          "amount": 50000.0,
+          "icon": "\u2b07\ufe0f"
+        }
+      ],
+      "created": "Nov 01, 2026"
+    }
+  }
+}

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizzy Bank</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .logo { color: #004E9A; font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #004E9A; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #003A70; }
+        .error { color: red; text-align: center; margin-bottom: 10px; }
+        .tab { display: flex; margin-bottom: 20px; }
+        .tab button { background: #eee; color: #333; border-radius: 0; margin: 0; }
+        .tab button.active { background: #004E9A; color: white; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">CHASE 🔷</div>
+        {% with messages = get_flashed_messages(category_filter=["error"]) %}
+            {% if messages %}<div class="error">{{ messages[0] }}</div>{% endif %}
+        {% endwith %}
+        
+        <div class="tab">
+            <button onclick="showForm('login')" class="active" id="btn-login">Login</button>
+            <button onclick="showForm('register')" id="btn-reg">Register</button>
+        </div>
+
+        <form id="form-login" action="/login" method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Sign In</button>
+        </form>
+
+        <form id="form-register" action="/register" method="POST" style="display:none;">
+            <input type="text" name="fullname" placeholder="Full Name" required>
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Create Account</button>
+        </form>
+    </div>
+
+    <script>
+        function showForm(type) {
+            document.getElementById('form-login').style.display = type === 'login' ? 'block' : 'none';
+            document.getElementById('form-register').style.display = type === 'register' ? 'block' : 'none';
+            document.getElementById('btn-login').className = type === 'login' ? 'active' : '';
+            document.getElementById('btn-reg').className = type === 'register' ? 'active' : '';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <style>
+        body { font-family: monospace; background: #1a1a1a; color: #fff; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #FFD700; padding-bottom: 10px; margin-bottom: 20px; }
+        h1 { color: #FFD700; margin: 0; font-size: 24px;}
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #333; padding: 10px; text-align: left; font-size: 14px;}
+        th { background: #333; color: #FFD700; }
+        .form-box { background: #2a2a2a; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #444; }
+        input, select { background: #333; color: white; border: 1px solid #555; padding: 10px; margin-right: 10px; border-radius: 4px; margin-bottom: 10px; }
+        button { background: #FFD700; color: black; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .success { color: #00C851; }
+        .btn-manage { background: #0060A9; color: white; text-decoration: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; display: inline-block;}
+        a { color: #FF4444; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>👑 ADMIN CONTROL</h1>
+        <a href="/logout">Log Out</a>
+    </div>
+
+    {% with messages = get_flashed_messages(category_filter=["success"]) %}
+        {% if messages %}<p class="success">{{ messages[0] }}</p>{% endif %}
+    {% endwith %}
+
+    <div class="form-box">
+        <h3>Edit User Balance</h3>
+        <form action="/admin/edit" method="POST">
+            <input type="text" name="target" placeholder="Username" required>
+            <select name="action">
+                <option value="deposit">Deposit Money</option>
+                <option value="withdraw">Withdraw Money</option>
+                <option value="set">Set Exact Balance</option>
+            </select>
+            <input type="number" name="amount" placeholder="Amount ($)" step="0.01" required>
+            <button type="submit">Execute</button>
+        </form>
+    </div>
+
+    <table>
+        <tr>
+            <th>Username</th><th>Full Name</th><th>Checking</th><th>Savings</th><th>Actions</th>
+        </tr>
+        {% for uname, info in users.items() %}
+        <tr>
+            <td>{{ uname }}</td>
+            <td>{{ info.full_name }}</td>
+            <td>${{ "{:,.2f}".format(info.checking) }}</td>
+            <td>${{ "{:,.2f}".format(info.savings) }}</td>
+            <td><a href="/admin/transactions/{{ uname }}" class="btn-manage">Manage History</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
