@@ -1,22 +1,43 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-import json, os, hashlib
+from flask_sqlalchemy import SQLAlchemy
+import hashlib
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 app.secret_key = "pizzy_bank_super_secret_key"
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), "data.json")
+# --- DATABASE SETUP ---
+# Use the absolute path for the database file so it works on Render
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'pizzybank.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
-# --- DATA HELPERS ---
-def load_data():
-    if not os.path.exists(DATA_FILE):
-        return {"users": {}}
-    with open(DATA_FILE, "r") as f:
-        return json.load(f)
+# --- DATABASE MODELS ---
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    full_name = db.Column(db.String(120), nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    checking = db.Column(db.Float, default=0.00)
+    savings = db.Column(db.Float, default=0.00)
+    loan = db.Column(db.Float, default=0.00)
+    account_no = db.Column(db.String(50), nullable=False)
+    card_no = db.Column(db.String(50), nullable=False)
+    created = db.Column(db.String(50), nullable=False)
 
-def save_data(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    date = db.Column(db.String(50), nullable=False)
+    type = db.Column(db.String(100), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    icon = db.Column(db.String(10), nullable=False)
+
+# Create the database tables if they don't exist
+with app.app_context():
+    db.create_all()
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -32,14 +53,13 @@ def index():
 def login():
     username = request.form['username'].lower()
     password = request.form['password']
-    data = load_data()
 
     if username == "admin" and password == "admin123":
         session['user'] = "admin"
         return redirect(url_for('admin'))
 
-    user = data["users"].get(username)
-    if user and user["password"] == hash_password(password):
+    user = User.query.filter_by(username=username).first()
+    if user and user.password == hash_password(password):
         session['user'] = username
         return redirect(url_for('dashboard'))
     
@@ -51,24 +71,28 @@ def register():
     username = request.form['username'].lower()
     fullname = request.form['fullname']
     password = request.form['password']
-    data = load_data()
 
-    if username in data["users"] or username == "admin":
+    if User.query.filter_by(username=username).first() or username == "admin":
         flash("Username already taken", "error")
         return redirect(url_for('index'))
 
-    data["users"][username] = {
-        "password": hash_password(password),
-        "full_name": fullname,
-        "checking": 0.00,
-        "savings": 0.00,
-        "loan": 0.00,
-        "account_no": f"...{1000 + len(data['users']) + 1}",
-        "card_no": f"4532 88** **** {1000 + len(data['users']) + 1}",
-        "transactions": [{"date": datetime.now().strftime("%b %d"), "type": "Account Opened", "amount": 0, "icon": "✨"}],
-        "created": datetime.now().strftime("%b %d, %Y"),
-    }
-    save_data(data)
+    # Create new user in database
+    new_user = User(
+        username=username,
+        full_name=fullname,
+        password=hash_password(password),
+        account_no=f"...{1000 + User.query.count() + 1}",
+        card_no=f"4532 88** **** {1000 + User.query.count() + 1}",
+        created=datetime.now().strftime("%b %d, %Y")
+    )
+    db.session.add(new_user)
+    db.session.commit()
+
+    # Add welcome transaction
+    tx = Transaction(user_id=new_user.id, date=datetime.now().strftime("%b %d"), type="Account Opened", amount=0, icon="✨")
+    db.session.add(tx)
+    db.session.commit()
+
     session['user'] = username
     return redirect(url_for('dashboard'))
 
@@ -77,16 +101,18 @@ def dashboard():
     if 'user' not in session or session['user'] == 'admin':
         return redirect(url_for('index'))
     
-    data = load_data()
-    user = data["users"][session['user']]
-    return render_template('dashboard.html', user=user, username=session['user'])
+    user = User.query.filter_by(username=session['user']).first()
+    # Get transactions (newest first)
+    transactions = Transaction.query.filter_by(user_id=user.id).order_by(Transaction.id.desc()).all()
+    
+    return render_template('dashboard.html', user=user, transactions=transactions, username=session['user'])
 
 @app.route('/admin')
 def admin():
     if session.get('user') != 'admin':
         return redirect(url_for('index'))
-    data = load_data()
-    return render_template('admin.html', users=data["users"])
+    users = User.query.all()
+    return render_template('admin.html', users=users)
 
 @app.route('/admin/edit', methods=['POST'])
 def admin_edit():
@@ -95,84 +121,71 @@ def admin_edit():
     action = request.form['action']
     amount = float(request.form['amount'])
     
-    data = load_data()
-    if target in data["users"]:
+    user = User.query.filter_by(username=target).first()
+    if user:
         if action == "deposit":
-            data["users"][target]["checking"] += amount
+            user.checking += amount
             tx_type = "Direct Deposit"
             tx_icon = "⬇️"
             tx_amount = amount
         elif action == "withdraw":
-            data["users"][target]["checking"] -= amount
+            user.checking -= amount
             tx_type = "Admin Withdrawal"
             tx_icon = "👑"
             tx_amount = -amount
         elif action == "set":
-            data["users"][target]["checking"] = amount
+            user.checking = amount
             tx_type = "Balance Adjustment"
             tx_icon = "👑"
             tx_amount = amount
         
-        data["users"][target]["transactions"].append({
-            "date": datetime.now().strftime("%b %d"), 
-            "type": tx_type, 
-            "amount": tx_amount, 
-            "icon": tx_icon
-        })
-        save_data(data)
+        tx = Transaction(user_id=user.id, date=datetime.now().strftime("%b %d"), type=tx_type, amount=tx_amount, icon=tx_icon)
+        db.session.add(tx)
+        db.session.commit()
         flash(f"Updated {target}'s balance.", "success")
     return redirect(url_for('admin'))
 
-# --- NEW: MANAGE TRANSACTIONS ---
 @app.route('/admin/transactions/<username>')
 def admin_manage_transactions(username):
     if session.get('user') != 'admin': return redirect(url_for('index'))
-    data = load_data()
-    if username not in data["users"]: return redirect(url_for('admin'))
+    user = User.query.filter_by(username=username).first()
+    if not user: return redirect(url_for('admin'))
     
-    user = data["users"][username]
-    return render_template('admin_tx.html', user=user, username=username)
+    transactions = Transaction.query.filter_by(user_id=user.id).order_by(Transaction.id.desc()).all()
+    return render_template('admin_tx.html', user=user, transactions=transactions, username=username)
 
-@app.route('/admin/delete_tx/<username>/<int:tx_index>')
-def admin_delete_tx(username, tx_index):
+@app.route('/admin/delete_tx/<username>/<int:tx_id>')
+def admin_delete_tx(username, tx_id):
     if session.get('user') != 'admin': return redirect(url_for('index'))
-    data = load_data()
-    if username in data["users"]:
-        try:
-            # Reverse the balance change before deleting the transaction
-            tx = data["users"][username]["transactions"][tx_index]
-            data["users"][username]["checking"] -= tx["amount"]
-            del data["users"][username]["transactions"][tx_index]
-            save_data(data)
-            flash("Transaction deleted and balance reversed.", "success")
-        except Exception as e:
-            flash("Error deleting transaction.", "error")
+    tx = Transaction.query.get(tx_id)
+    user = User.query.filter_by(username=username).first()
+    
+    if tx and user:
+        # Reverse the balance
+        user.checking -= tx.amount
+        db.session.delete(tx)
+        db.session.commit()
+        flash("Transaction deleted and balance reversed.", "success")
     return redirect(url_for('admin_manage_transactions', username=username))
 
-@app.route('/admin/edit_tx/<username>/<int:tx_index>', methods=['POST'])
-def admin_edit_tx(username, tx_index):
+@app.route('/admin/edit_tx/<username>/<int:tx_id>', methods=['POST'])
+def admin_edit_tx(username, tx_id):
     if session.get('user') != 'admin': return redirect(url_for('index'))
-    data = load_data()
-    if username in data["users"]:
-        try:
-            new_date = request.form['date']
-            new_type = request.form['type']
-            new_amount = float(request.form['amount'])
-            
-            # Revert old amount, apply new amount
-            old_amount = data["users"][username]["transactions"][tx_index]["amount"]
-            data["users"][username]["checking"] -= old_amount
-            data["users"][username]["checking"] += new_amount
-            
-            # Update the transaction details
-            data["users"][username]["transactions"][tx_index]["date"] = new_date
-            data["users"][username]["transactions"][tx_index]["type"] = new_type
-            data["users"][username]["transactions"][tx_index]["amount"] = new_amount
-            
-            save_data(data)
-            flash("Transaction updated successfully.", "success")
-        except Exception as e:
-            flash("Error updating transaction.", "error")
+    tx = Transaction.query.get(tx_id)
+    user = User.query.filter_by(username=username).first()
+    
+    if tx and user:
+        new_amount = float(request.form['amount'])
+        # Adjust balance
+        user.checking -= tx.amount
+        user.checking += new_amount
+        
+        tx.date = request.form['date']
+        tx.type = request.form['type']
+        tx.amount = new_amount
+        
+        db.session.commit()
+        flash("Transaction updated successfully.", "success")
     return redirect(url_for('admin_manage_transactions', username=username))
 
 @app.route('/logout')

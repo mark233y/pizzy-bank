@@ -116,7 +116,7 @@
       "password": "ca7d2ececad211b3489d782a6313873ab87c84c7565ceffdf3916d86ffba4064",
       "full_name": "Mark Dewitt",
       "checking": 200025.0,
-      "savings": 0.0,
+      "savings": 10.0,
       "loan": 0.0,
       "account_no": "...1004",
       "card_no": "4532 88** **** 1004",
@@ -144,9 +144,24 @@
           "type": "Direct Deposit",
           "amount": 50000.0,
           "icon": "\u2b07\ufe0f"
+        },
+        {
+          "date": "Nov 03",
+          "type": "Direct Deposit",
+          "amount": 10.0,
+          "icon": "\u2b07\ufe0f"
         }
       ],
       "created": "Nov 01, 2026"
+    },
+    "sam": {
+      "password": "f98204ba6963009734f0398a80f8e44f9d3ef74ebb9c49e5d4f000bd1c102d29",
+      "full_name": "rs",
+      "checking": 0.0,
+      "savings": 0.0,
+      "account_no": "...1005",
+      "transactions": [],
+      "created": "Nov 03, 2026"
     }
   }
 }

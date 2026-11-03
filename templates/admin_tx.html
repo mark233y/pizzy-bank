@@ -38,15 +38,15 @@
             <th>Amount</th>
             <th>Actions</th>
         </tr>
-        {% for tx in user.transactions %}
+        {% for tx in transactions %}
         <tr>
-            <form action="/admin/edit_tx/{{ username }}/{{ loop.index0 }}" method="POST">
+            <form action="/admin/edit_tx/{{ username }}/{{ tx.id }}" method="POST">
                 <td><input type="text" name="date" value="{{ tx.date }}" required></td>
                 <td><input type="text" name="type" value="{{ tx.type }}" required style="width: 200px;"></td>
                 <td><input type="number" name="amount" value="{{ tx.amount }}" step="0.01" required></td>
                 <td class="tx-form">
                     <button type="submit">Save</button>
-                    <a href="/admin/delete_tx/{{ username }}/{{ loop.index0 }}" class="btn-del" onclick="return confirm('Delete this transaction? Balance will be reversed.');">Delete</a>
+                    <a href="/admin/delete_tx/{{ username }}/{{ tx.id }}" class="btn-del" onclick="return confirm('Delete this transaction? Balance will be reversed.');">Delete</a>
                 </td>
             </form>
         </tr>
